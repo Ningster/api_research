@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>api_research</title>
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="/static/style.css">
+    <script>
+    window.fbAsyncInit = function() {
+      FB.init({
+        appId      : '1804610313118267',
+        xfbml      : true,
+        version    : 'v2.1'
+      });
+    };
+
+    (function(d, s, id){
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = "//connect.facebook.net/en_US/sdk.js";
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+   </script>
+  </head>
+  <body>
+    <button type="button" class="btn btn-default btn-sm" id="get_fb_id_btn">
+      <span class="glyphicon">check out the messages of Microsoft!</span>
+    </button>
+    <div
+      class="fb-like"
+      data-share="true"
+      data-width="450"
+      data-show-faces="true">
+    </div>
+    <div id="msft_result">
+
+    </div>
+  </body>
+    <script src="/static/script.js"></script>
+</html>
