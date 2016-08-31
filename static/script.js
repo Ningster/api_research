@@ -2,16 +2,16 @@ $(document).ready(function(){
 
   //input data as restaurant_name
   $("#get_fb_id_btn").click(function() {
-    var restaurant_name=document.getElementById('restaurant_name').value;
+    var term=document.getElementById('input_txt').value;
     $.ajax({
-      url:"search_FB_ID/",
+      url:"name_match_id/",
       type:"get",
-      data:{"restaurant_name":restaurant_name},
+      data:{"term":term},
       success:function(response){
         // console.log(response);
         // document.getElementById("fb_id_result").innerHTML = response['data'];
         $("#fb_id_result").append(
-                       JSON.stringify(response[restaurant_name])
+                       JSON.stringify(response['data'])
                      );
       },
     });
