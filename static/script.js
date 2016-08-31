@@ -1,6 +1,23 @@
 $(document).ready(function(){
-  var user_access_token = null;
+
+  //input data as restaurant_name
   $("#get_fb_id_btn").click(function() {
+    var restaurant_name=document.getElementById('restaurant_name').value;
+    $.ajax({
+      url:"search_FB_ID/",
+      type:"get",
+      data:{"restaurant_name":restaurant_name},
+      success:function(response){
+        // console.log(response);
+        // document.getElementById("fb_id_result").innerHTML = response['data'];
+        $("#fb_id_result").append(
+                       JSON.stringify(response[restaurant_name])
+                     );
+      },
+    });
+
+
+      // var user_access_token = null;
     // FB.api("/ME", "GET", {access_token:"EAACEdEose0cBAE8yjzTgDc88YKCONPAYHZBytTIlyywkKgZAVaUISbX75iZBxj0poBECDgNwoNO0QwSv24eE3QXbZAfz1htN2b5hwy6NuJ3ZCkR3VQVXTxg90oZBPleeDDFeYCJo2Sha6g4a7gFqyiZBrIJ1LHG1rbUb6wLi2G1UlQNzvjA3ZBMD36Qo1HVU8L0ZD"},
     // function(res){
     //   console.log(res);
@@ -15,27 +32,27 @@ $(document).ready(function(){
     //     function(response) {
     //         console.log(response);
     //     });
-      FB.login(function(response) {
-          if (response.authResponse) {
-           user_access_token=FB.getAuthResponse().accessToken;
-           console.log(user_access_token);
-           console.log('Welcome!  Fetching your information.... ');
-           FB.api('/me', function(response) {
-             console.log('Good to see you, ' + response.name + '.');
-             console.log(encodeURIComponent('22Café-22號咖啡館-772892866054564'));
-           });
-           FB.api('/772892866054564/likes','GET',
-               {"access_token":user_access_token,"summary":true},
-               function(response) {
-                 alert(response['data'].length);
-                  //  $("#msft_result").append(
-                  //    JSON.stringify(response)
-                  //  );
-               });
-          } else {
-           console.log('User cancelled login or did not fully authorize.');
-          }
-      });
+      // FB.login(function(response) {
+      //     if (response.authResponse) {
+      //      user_access_token=FB.getAuthResponse().accessToken;
+      //      console.log(user_access_token);
+      //      console.log('Welcome!  Fetching your information.... ');
+      //      FB.api('/me', function(response) {
+      //        console.log('Good to see you, ' + response.name + '.');
+      //        console.log(encodeURIComponent('22Café-22號咖啡館-772892866054564'));
+      //      });
+      //      FB.api('/772892866054564/likes','GET',
+      //          {"access_token":user_access_token,"summary":true},
+      //          function(response) {
+      //            alert(response['data'].length);
+      //             //  $("#msft_result").append(
+      //             //    JSON.stringify(response)
+      //             //  );
+      //          });
+      //     } else {
+      //      console.log('User cancelled login or did not fully authorize.');
+      //     }
+      // });
 });
 
 
