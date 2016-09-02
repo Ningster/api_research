@@ -1,3 +1,5 @@
+# -*- coding: utf8 -*-
+# coding: utf8
 from django.shortcuts import render_to_response
 from django.http import HttpResponse, JsonResponse
 import json
@@ -21,51 +23,72 @@ with io.open('config_secret_fb.json') as cred_fb:
 def main(request):
     return render_to_response('index.html')
 
+def truncate(f, n):
+    '''Truncates/pads a float f to n decimal places without rounding'''
+    s = '{}'.format(f)
+    if 'e' in s or 'E' in s:
+        return '{0:.{1}f}'.format(f, n)
+    i, p, d = s.partition('.')
+    return '.'.join([i, (d+'0'*n)[:n]])
+
 def page_FB_data(page_id):
-    # input: facebook page id, output: [dict] facebook page data set with specified fields
-    page_data = graph.request('/'+page_id,{'fields':'is_community_page'+','+'category'})
+    # input: facebook page id, output: [facebook response] facebook page data set with specified fields
+    page_data = graph.request('/'+page_id,{'fields':'is_community_page'+','+'category'+','+'location'})
     return page_data
 
-def search_FB_ID(restaurant_name):
-    # input: restaurant name, output: [json] the ID/name of the restaurant business facebook fanpage of given restaurant name
-    FB_search_results_by_name=graph.request('/search',{'q':restaurant_name,'type':'page'})['data']
-    valid_FB_page = {restaurant_name:[]}
+def search_FB_ID(business):
+    # input: yelp business dict, output: [list] contains all valid facebook page in dict format
+    business_name = business['yelp_name']
+    FB_search_results_by_name=graph.request('/search',{'q':business_name,'type':'page'})['data']
+    valid_FB_page = []
     for page in FB_search_results_by_name:    #page type: dictionary
         page_name = page['name']
+        # print page_name
         page_id = page['id']
         page_data = page_FB_data(page_id)
         is_community_page=page_data['is_community_page']
-        category=page_data['category']
-        if not is_community_page and category=="Restaurant/Cafe":
-            valid_FB_page[restaurant_name].append(page)
+        if not is_community_page:
+            try:
+                fb_latitude=page_data['location']['latitude']
+                fb_longitude=page_data['location']['longitude']
+                if truncate(fb_latitude,2)==business['yelp_coordinate']['latitude'] and truncate(fb_longitude,2)==business['yelp_coordinate']['longitude']:
+                    fb_business_dict = {'fb_name':page_name,'fb_id':page_id}
+                    valid_FB_page.append(fb_business_dict)
+            except Exception as e:
+                print(e)
     return valid_FB_page
 
-
-def search_yelp_term(term):
+def search_yelp_category(category):
         params={
-        'term':term,
+        'category_filter':category,
         'cc':'TW',
-        'limit':20,
-        'offset':20,
+        'limit':3,
         'sort':0
         }
         results = client.search('taipei',**params)
-        yelp_restaurant_name=[]
-        for restaurant in results.businesses:
-            name = restaurant.name.encode('utf8')
-            yelp_restaurant_name.append(name)
-        return yelp_restaurant_name
+        yelp_business_list=[]
+        for business in results.businesses:
+            name = business.name.encode('utf8')
+            location_latitude = truncate(business.location.coordinate.latitude,2)
+            location_longitude = truncate(business.location.coordinate.longitude,2)
+            business_dict = {'yelp_name':name,'yelp_coordinate':{'latitude':location_latitude,'longitude':location_longitude}}
+            yelp_business_list.append(business_dict)
+        return yelp_business_list
 
 def name_match_id(request):
-    if request.method == 'GET' and request.GET['term'] != '':
-        term=request.GET['term']
-        restaurant_name_list=search_yelp_term(term)
+    if request.method == 'GET' and request.GET['category'] != '':
+        category=request.GET['category']
+        yelp_business_list=search_yelp_category(category)
         results = []
-        for restaurant_name in restaurant_name_list:
-            print restaurant_name
-            fb_page_dict=search_FB_ID(restaurant_name)
-            print fb_page_dict
-            results.append(fb_page_dict)
+        for business in yelp_business_list:
+            print business['yelp_name']
+            valid_fb_page_list=search_FB_ID(business)
+            # yelp_fb_match_dict = {'yelp_name':business['yelp_name'],'fb_page':valid_fb_page_list}
+            fb_id = []
+            for page in valid_fb_page_list:
+                fb_id.append(page['fb_id'])
+            yelp_fb_match_dict = {'yelp_name':business['yelp_name'],'fb_id':fb_id}
+            results.append(yelp_fb_match_dict)
         return JsonResponse({'data':results})
     else:
         return JsonResponse({'request':False})
